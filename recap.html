@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Validation des commandes</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 16px; background:#f6f7f9; }
+    .wrap { max-width: 980px; margin: 0 auto; }
+    h1 { text-align:center; margin: 10px 0 14px; font-size: 20px; }
+
+    .toolbar { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin: 10px 0 14px; }
+    button {
+      padding: 10px 14px; border:0; border-radius:12px;
+      cursor:pointer; font-size: 15px; color:#fff; background:#2563eb;
+    }
+    button:hover { filter: brightness(0.95); }
+    .btn-grey { background:#6b7280; }
+    .btn-red { background:#dc2626; }
+    .btn-green{ background:#16a34a; }
+    .btn-dark{ background:#111827; }
+
+    .status { text-align:center; color:#6b7280; margin: 8px 0; }
+    .error { text-align:center; color:#b91c1c; font-weight:600; margin: 8px 0; }
+
+    .panel {
+      background:#fff; border-radius:14px; margin: 10px 0;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+      overflow: hidden;
+    }
+    .panel summary {
+      list-style:none; cursor:pointer; padding:14px;
+      display:flex; justify-content:space-between; gap:12px; user-select:none;
+    }
+    .panel summary::-webkit-details-marker { display:none; }
+
+    .title { display:flex; flex-direction:column; gap:4px; min-width:0; }
+    .title .name { font-size:16px; text-transform:uppercase; letter-spacing:.04em; color:#111827; }
+    .title .meta { font-size:12px; color:#6b7280; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width: 75vw; }
+    .badge { background:#e5e7eb; color:#111827; border-radius:999px; padding:6px 10px; font-size:12px; font-weight:800; }
+
+    .content { padding: 0 14px 14px; }
+    .rows { display:flex; flex-direction:column; gap:8px; margin-top: 10px; }
+    .row {
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      padding:10px; border-radius:12px; background:#f3f4f6;
+    }
+    .prod { font-weight:800; color:#111827; }
+    .qty {
+      width: 110px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid #d1d5db;
+      font-size: 14px;
+      text-align: center;
+      background:#fff;
+    }
+
+    .addBox {
+      margin-top: 12px;
+      background:#fff;
+      border: 1px dashed #d1d5db;
+      border-radius: 12px;
+      padding: 12px;
+    }
+    .addTitle { font-weight:800; color:#111827; margin-bottom: 8px; }
+    .addGrid { display:flex; flex-direction:column; gap:10px; }
+    .addGrid select, .addGrid input[type="text"] {
+      padding:10px; border-radius:10px; border:1px solid #d1d5db;
+      font-size: 14px; background:#fff;
+    }
+    .addRow { display:flex; gap:10px; align-items:center; flex-wrap: wrap; }
+    .qtySmall {
+      width:120px; padding:10px; border-radius:10px; border:1px solid #d1d5db;
+      font-size:14px; text-align:center; background:#fff;
+    }
+    .hint { font-size:12px; color:#6b7280; line-height: 1.3; }
+
+    .actions { display:flex; flex-wrap:wrap; gap:10px; margin-top: 12px; }
+    .actions button { padding: 9px 12px; font-size: 13px; border-radius: 10px; }
+
+    .empty { color:#6b7280; font-style: italic; margin-top: 10px; }
+
+    /* --- PIN overlay --- */
+    .overlay {
+      position: fixed; inset: 0;
+      background: rgba(17,24,39,0.75);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      z-index: 9999;
+    }
+    .modal {
+      width: 100%;
+      max-width: 420px;
+      background: #fff;
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+    }
+    .modal h2 { margin: 0 0 8px; font-size: 18px; color:#111827; text-align:center; }
+    .modal p { margin: 0 0 14px; color:#6b7280; font-size: 13px; text-align:center; }
+    .pinRow { display:flex; gap:10px; justify-content:center; margin-bottom: 12px; }
+    .pinInput {
+      width: 180px;
+      padding: 12px 14px;
+      font-size: 18px;
+      border-radius: 12px;
+      border: 1px solid #d1d5db;
+      text-align:center;
+      letter-spacing: 0.25em;
+    }
+    .modalActions { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+    .modalActions button { min-width: 140px; }
+    .smallLink {
+      margin-top: 12px;
+      text-align:center;
+      font-size: 12px;
+      color:#6b7280;
+    }
+    .smallLink a { color:#2563eb; text-decoration:none; font-weight:700; }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <h1>Validation des commandes</h1>
+
+    <div class="toolbar">
+      <button class="btn-grey" onclick="goHome()">Retour</button>
+      <button onclick="refreshData()">Rafraîchir</button>
+      <button class="btn-grey" onclick="logout()">Se déconnecter</button>
+      <button class="btn-green" onclick="validateAll()">Valider les commandes</button>
+      <button class="btn-red" onclick="resetAll()">Réinitialiser TOUT</button>
+    </div>
+
+    <div id="status" class="status"></div>
+    <div id="error" class="error"></div>
+
+    <div id="panels"></div>
+  </div>
+
+<script>
+  // ✅ Ton URL Render
+  const API_URL = "https://agrenad-backend.onrender.com";
+
+  const SERVICES = [
+    { key: "petitdej", label: "Petit-déj" },
+    { key: "bar", label: "Bar" },
+    { key: "entretien", label: "Entretien" }
+  ];
+
+  const SUGGESTIONS = {
+    petitdej: ["oeufs","fromage_blanc","lait","brioches","pains_au_lait","beurre_demi_sel","beurre_doux","jambon","poulet","graines","bananes","the","remarques"],
+    bar: ["cafe","sucre","gobelets","serviettes","eau","soda","chips","bonbons","biere","vin","sirop","glacons"],
+    entretien: ["papier_toilette","essuie_tout","sacs_poubelle","liquide_vaisselle","eponges","javel","produit_sol","gants","desinfectant"]
+  };
+
+  // Cache client
+  const serviceCache = {}; // { serviceKey: { produits, updatedAt } }
+
+  // ---------- UI helpers ----------
+  function goHome(){ window.location.href = "index.html"; }
+  function setStatus(msg){ document.getElementById("status").textContent = msg || ""; }
+  function setError(msg){ document.getElementById("error").textContent = msg || ""; }
+
+  function isNonZeroValue(v){
+    if (v === null || v === undefined) return false;
+    const t = String(v).trim();
+    if (t === "" || t === "0") return false;
+    const n = Number(t);
+    if (!Number.isNaN(n)) return n !== 0;
+    return true;
+  }
+
+  function extractProduits(serviceData){
+    if (!serviceData) return { produits: {}, updatedAt: null };
+
+    // cas : { donnees: { donnees: {...} }, updatedAt }
+    if (serviceData.donnees && serviceData.donnees.donnees && typeof serviceData.donnees.donnees === "object") {
+      return { produits: serviceData.donnees.donnees, updatedAt: serviceData.updatedAt || null };
+    }
+
+    // cas : { donnees: {...}, updatedAt }
+    if (serviceData.donnees && typeof serviceData.donnees === "object") {
+      return { produits: serviceData.donnees, updatedAt: serviceData.updatedAt || null };
+    }
+
+    // cas : {...}
+    if (typeof serviceData === "object") {
+      return { produits: serviceData, updatedAt: serviceData.updatedAt || null };
+    }
+
+    return { produits: {}, updatedAt: null };
+  }
+
+  function labelize(prodKey){
+    return String(prodKey).replaceAll("_"," ").replace(/\b\w/g, (m)=>m.toUpperCase());
+  }
+
+  // ---------- API ----------
+  async function fetchCommandes(){
+    const url = `${API_URL}/api/commandes`;
+    /*
+    const res = await fetch(`${API_URL}/api/commandes`, { cache: "no-store" });*/
+    const res = await fetch(url, { cache:"no-store" });
+
+    if (!res.ok) {
+      const txt = await res.text().catch(()=>"");
+       throw new Error(`HTTP ${res.status} sur /api/commandes : ${txt}`);
+    }
+    return res.json();
+  }
+
+  async function saveService(serviceKey){
+    const produitsObj = serviceCache?.[serviceKey]?.produits || {};
+    const url = `${API_URL}/api/commandes/${serviceKey}`;
+
+    // Ton backend attend un objet plat { produit: "qte" }
+    const res = await fetch(url, {
+      method: "POST",
+      credentials:"include",
+      cache: "no-store",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(produitsObj)
+    });
+
+    if (!res.ok) {
+      const txt = await res.text().catch(()=> "");
+      throw new Error(`HTTP ${res.status} sur POST ${url} : ${txt}`);
+    }
+
+    return res.json().catch(()=> ({}));
+  }
+
+  async function resetService(serviceKey){
+    const res = await fetch(`${API_URL}/api/reset/${serviceKey}`, {
+      method:"POST",
+      cache: "no-store",
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status} sur /api/reset/${serviceKey}`);
+    return res.json().catch(()=>({}));
+  }
+
+  async function resetAll(){
+    if (!confirm("Réinitialiser TOUT (petit-déj + bar + entretien + validation) ?")) return;
+    try {
+      setError(""); setStatus("Reset total…");
+      const res = await fetch(`${API_URL}/api/reset-all`, { method:"POST", cache: "no-store" });
+      if (!res.ok) throw new Error(`HTTP ${res.status} sur /api/reset-all`);
+      setStatus("✅ Reset total effectué");
+      await refreshData();
+    } catch(e){
+      console.error(e);
+      setStatus("");
+      setError("❌ " + (e?.message || e));
+    }
+  }
+
+  async function validateAll(){
+    if (!confirm("Valider les commandes ? (Les courses se baseront sur ce snapshot)")) return;
+    try {
+      setError(""); 
+      setStatus("Validation…");
+      const res = await fetch(`${API_URL}/api/validate`, { 
+        method:"POST",
+         credentials:"include",
+          cache:"no-store"
+        });
+      if (!res.ok) {
+        const txt = await res.text().catch(()=> "");
+        throw new Error(`HTTP ${res.status} : ${txt}`);
+      }
+      const out = await res.json().catch(()=>({}));
+      setStatus(out.validatedAt ? `✅ Validé le ${out.validatedAt}` : "✅ Validé");
+    } catch(e){
+      console.error(e);
+      setStatus("");
+      setError("❌ " + (e?.message || e));
+    }
+  }
+
+  // ---------- UI Build ----------
+  function buildPanel(serviceKey, label, dataObj){
+    const { produits, updatedAt } = extractProduits(dataObj);
+
+    const entries = Object.entries(produits || {})
+      .filter(([k,v]) => {
+        if (k === "remarques") return String(v||"").trim() !== "";
+        return isNonZeroValue(v);
+      })
+      .sort((a,b)=>a[0].localeCompare(b[0], "fr"));
+
+    serviceCache[serviceKey] = { produits: { ...(produits||{}) }, updatedAt: updatedAt || null };
+
+    const details = document.createElement("details");
+    details.className = "panel";
+    details.open = true;
+
+    const count = entries.length;
+    const meta = updatedAt ? `Dernière mise à jour : ${updatedAt}` : "Aucune commande enregistrée";
+
+    details.innerHTML = `
+      <summary>
+        <div class="title">
+          <div class="name">${label}</div>
+          <div class="meta">${meta}</div>
+        </div>
+        <div class="badge">${count} ligne(s)</div>
+      </summary>
+
+      <div class="content">
+        <div class="rows" id="rows_${serviceKey}"></div>
+
+        <div class="addBox">
+          <div class="addTitle">➕ Ajouter un produit</div>
+          <div class="addGrid">
+            <div class="addRow">
+              <select id="sel_${serviceKey}">
+                <option value="">Choisir un produit…</option>
+                ${(SUGGESTIONS[serviceKey]||[]).map(p=>`<option value="${p}">${labelize(p)}</option>`).join("")}
+                <option value="__other__">Autre (écrire le nom)…</option>
+              </select>
+              <input id="other_${serviceKey}" type="text" placeholder="Nom du produit (si Autre)" style="display:none; flex:1; min-width: 180px;" />
+            </div>
+
+            <div class="addRow">
+              <input id="qty_${serviceKey}" class="qtySmall" type="text" placeholder="Quantité (ex: 10)" />
+              <button class="btn-dark" onclick="addProduit('${serviceKey}')">Ajouter</button>
+            </div>
+
+            <div class="hint">
+              Astuce : tu peux aussi modifier directement une quantité existante (mettre 0 pour supprimer de l'affichage).
+            </div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="btn-green" onclick="onSaveClick('${serviceKey}')">💾 Enregistrer</button>
+          <button class="btn-red" onclick="onResetService('${serviceKey}', '${label.replaceAll("'", "\\'")}')">🧹 Reset ${label}</button>
+        </div>
+
+        <div id="empty_${serviceKey}" class="empty" style="display:${entries.length ? "none":"block"};">
+          Aucun produit à afficher (tout est à 0 ou vide).
+        </div>
+      </div>
+    `;
+
+    const rows = details.querySelector(`#rows_${serviceKey}`);
+    for (const [prod, qty] of entries) {
+      const row = document.createElement("div");
+      row.className = "row";
+
+      const isRemark = (prod === "remarques");
+      row.innerHTML = `
+        <div class="prod">${labelize(prod)}</div>
+        ${isRemark
+          ? `<input class="qty" style="width:220px;text-align:left" type="text" value="${String(qty||"")}" />`
+          : `<input class="qty" type="text" value="${String(qty||"")}" />`
+        }
+      `;
+
+      const input = row.querySelector("input");
+      input.addEventListener("input", () => {
+        serviceCache[serviceKey].produits[prod] = input.value;
+      });
+
+      rows.appendChild(row);
+    }
+
+    const sel = details.querySelector(`#sel_${serviceKey}`);
+    const other = details.querySelector(`#other_${serviceKey}`);
+    sel.addEventListener("change", () => {
+      other.style.display = (sel.value === "__other__") ? "block" : "none";
+    });
+
+    return details;
+  }
+
+  function addProduit(serviceKey){
+    const sel = document.getElementById(`sel_${serviceKey}`);
+    const other = document.getElementById(`other_${serviceKey}`);
+    const qty = document.getElementById(`qty_${serviceKey}`);
+
+    let key = (sel.value || "").trim();
+    if (key === "__other__") key = (other.value || "").trim();
+
+    const q = (qty.value || "").trim();
+    if (!key) { alert("Choisis un produit (ou écris un nom)."); return; }
+    if (!q) { alert("Mets une quantité."); return; }
+
+    if (!serviceCache[serviceKey]) serviceCache[serviceKey] = { produits:{}, updatedAt:null };
+    serviceCache[serviceKey].produits[key] = q;
+
+    refreshData().catch(()=>{});
+  }
+
+  async function onSaveClick(serviceKey){
+    try{
+      setError(""); setStatus("Ajout + Enregistrement…");
+      await saveService(serviceKey);
+      if(sel) sel.value ="";
+      if (other) {other.value ="";
+        other.style.display = "none";
+      }
+      if (qty) qty.value = "";
+
+      setStatus("✅ Enregistré");
+      await refreshData();
+    } catch(e){
+      console.error(e);
+      setStatus("");
+      setError("❌ " + (e?.message || e));
+    }
+  }
+
+  async function onResetService(serviceKey, label){
+    if (!confirm(`Reset ${label} ?`)) return;
+    try{
+      setError(""); setStatus("Reset…");
+      await resetService(serviceKey);
+      setStatus("✅ Reset effectué");
+      await refreshData();
+    } catch(e){
+      console.error(e);
+      setStatus("");
+      setError("❌ " + (e?.message || e));
+    }
+  }
+
+  async function refreshData(){
+    try{
+      setError(""); setStatus("Chargement…");
+
+      const commandes = await fetchCommandes();
+      const panels = document.getElementById("panels");
+      panels.innerHTML = "";
+
+      for (const s of SERVICES) {
+        panels.appendChild(buildPanel(s.key, s.label, commandes?.[s.key] || null));
+      }
+
+      setStatus("");
+    } catch(e){
+      console.error(e);
+      setStatus("");
+      setError("❌ " + (e?.message || e));
+    }
+  }
+
+  // Boot
+  refreshData();
+</script>
+<!---test-->

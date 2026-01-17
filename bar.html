@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Commande Bar</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      margin: 0;
+      padding: 1.5rem;
+      max-width: 900px;
+      margin-inline: auto;
+      background: #f5f5f5;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+    .card {
+      background: #ffffff;
+      padding: 1.5rem;
+      border-radius: 1rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      margin-bottom: 1rem;
+    }
+    .field-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.6rem;
+      gap: 0.5rem;
+    }
+    .field-row label {
+      flex: 1;
+      font-weight: 500;
+    }
+    .field-row input[type="number"] {
+      width: 90px;
+      padding: 0.3rem 0.4rem;
+      border-radius: 0.5rem;
+      border: 1px solid #ccc;
+      text-align: right;
+    }
+    .subsection-title {
+      margin-top: 1rem;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      text-decoration: underline;
+    }
+    .buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.7rem;
+      justify-content: center;
+      margin-top: 1rem;
+    }
+    button {
+      border: none;
+      padding: 0.6rem 1.2rem;
+      border-radius: 999px;
+      font-size: 0.95rem;
+      cursor: pointer;
+    }
+    .primary {
+      background: #2563eb;
+      color: white;
+      font-weight: 600;
+    }
+    .secondary {
+      background: #e5e7eb;
+      color: #111827;
+    }
+    .danger {
+      background: #dc2626;
+      color: white;
+      font-weight: 600;
+    }
+    .top-nav {
+      margin-bottom: 1rem;
+      display: flex;
+      justify-content: space-between;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+  </style>
+</head>
+<body>
+
+<div class="top-nav">
+  <button class="secondary" type="button" onclick="window.location.href='index.html'">
+    ⬅️ Retour accueil
+  </button>
+  <button class="secondary" type="button" onclick="window.location.href='recap.html'">
+    📄 Voir le récapitulatif
+  </button>
+</div>
+<h1>Commande Bar</h1>
+
+<div class="card">
+  <form id="form-bar">
+
+    <!-- Produits simples -->
+    <div class="field-row"><label for="twix">Twix</label><input type="number" id="twix" name="twix" min="0" step="1" /></div>
+    <div class="field-row"><label for="mms">M&amp;M's</label><input type="number" id="mms" name="mms" min="0" step="1" /></div>
+    <div class="field-row"><label for="bounty">Bounty</label><input type="number" id="bounty" name="bounty" min="0" step="1" /></div>
+    <div class="field-row"><label for="mars">Mars</label><input type="number" id="mars" name="mars" min="0" step="1" /></div>
+    <div class="field-row"><label for="snickers">Snickers</label><input type="number" id="snickers" name="snickers" min="0" step="1" /></div>
+
+    <div class="field-row"><label for="bonbon">Bonbons</label><input type="number" id="bonbon" name="bonbon" min="0" step="1" /></div>
+    <div class="field-row"><label for="bonbon_piquant">Bonbons piquants</label><input type="number" id="bonbon_piquant" name="bonbon_piquant" min="0" step="1" /></div>
+
+    <div class="field-row"><label for="olives_noires">Olives noires</label><input type="number" id="olives_noires" name="olives_noires" min="0" step="1" /></div>
+    <div class="field-row"><label for="olives_vertes">Olives vertes</label><input type="number" id="olives_vertes" name="olives_vertes" min="0" step="1" /></div>
+
+    <div class="field-row"><label for="chips_lays">Chips Lay's</label><input type="number" id="chips_lays" name="chips_lays" min="0" step="1" /></div>
+
+    <p class="subsection-title">Saucissons</p>
+    <div class="field-row"><label for="saucisson_noisettes">Saucisson noisettes</label><input type="number" id="saucisson_noisettes" name="saucisson_noisettes" min="0" step="1" /></div>
+    <div class="field-row"><label for="saucisson_comte">Saucisson comté</label><input type="number" id="saucisson_comte" name="saucisson_comte" min="0" step="1" /></div>
+    <div class="field-row"><label for="saucisson_piment">Saucisson piment</label><input type="number" id="saucisson_piment" name="saucisson_piment" min="0" step="1" /></div>
+    <div class="field-row"><label for="saucisson_cepes">Saucisson cèpes</label><input type="number" id="saucisson_cepes" name="saucisson_cepes" min="0" step="1" /></div>
+    <div class="field-row"><label for="saucisson_nature">Saucisson nature</label><input type="number" id="saucisson_nature" name="saucisson_nature" min="0" step="1" /></div>
+
+    <div class="field-row"><label for="cacahuetes">Cacahuètes</label><input type="number" id="cacahuetes" name="cacahuetes" min="0" step="1" /></div>
+    <div class="field-row"><label for="belin_monaco">Berlin Monaco</label><input type="number" id="belin_monaco" name="belin_monaco" min="0" step="1" /></div>
+    <div class="field-row"><label for="curly">Curly</label><input type="number" id="curly" name="curly" min="0" step="1" /></div>
+    <div class="field-row"><label for="menthe">Menthe</label><input type="number" id="menthe" name="menthe" min="0" step="1" /></div>
+
+    <div class="field-row"><label for="citrons_vert">Citrons verts</label><input type="number" id="citrons_vert" name="citrons_vert" min="0" step="1" /></div>
+    <div class="field-row"><label for="citrons_jaune">Citrons jaunes</label><input type="number" id="citrons_jaune" name="citrons_jaune" min="0" step="1" /></div>
+
+    <div class="field-row"><label for="lait_entier">Lait entier</label><input type="number" id="lait_entier" name="lait_entier" min="0" step="1" /></div>
+    <div class="field-row"><label for="miel">Miel</label><input type="number" id="miel" name="miel" min="0" step="1" /></div>
+
+    <div class="field-row"><label for="pots_olives">Pots plastique olives</label><input type="number" id="pots_olives" name="pots_olives" min="0" step="1" /></div>
+
+    <p class="subsection-title">Gobelets</p>
+    <div class="field-row"><label for="gobelet_expresso">Gobelets expresso</label><input type="number" id="gobelet_expresso" name="gobelet_expresso" min="0" step="1" /></div>
+    <div class="field-row"><label for="gobelet_allonge">Gobelets allongé</label><input type="number" id="gobelet_allonge" name="gobelet_allonge" min="0" step="1" /></div>
+    <div class="field-row"><label for="gobelet_chocolat">Gobelets chocolat</label><input type="number" id="gobelet_chocolat" name="gobelet_chocolat" min="0" step="1" /></div>
+
+    <div class="field-row"><label for="agitateur_bois">Agitateurs bois</label><input type="number" id="agitateur_bois" name="agitateur_bois" min="0" step="1" /></div>
+    <div class="field-row"><label for="pailles">Pailles</label><input type="number" id="pailles" name="pailles" min="0" step="1" /></div>
+    <div class="field-row"><label for="savon_main">Savon mains</label><input type="number" id="savon_main" name="savon_main" min="0" step="1" /></div>
+    <div class="field-row"><label for="produits_sol">Produits sol</label><input type="number" id="produits_sol" name="produits_sol" min="0" step="1" /></div>
+
+    <div class="field-row">
+      <label for="remarques_bar">Remarques / produits supplémentaires</label>
+    </div>
+    <div class="field-row" style="flex-direction: column; align-items: stretch;">
+      <textarea id="remarques_bar" name="remarques_bar" rows="3"
+        style="width:100%; border-radius:0.5rem; border:1px solid #ccc; padding:0.4rem 0.6rem;"></textarea>
+    </div>
+
+    <div class="buttons">
+      <button class="primary" type="button" onclick="sauvegarderCommande()">
+        💾 Enregistrer la commande
+      </button>
+      <button class="danger" type="button" onclick="effacerFormulaire()">
+        🧹 Effacer
+      </button>
+    </div>
+
+  </form>
+</div>
+
+<script>
+  const SERVICE = "bar";
+  const API_URL = "https://agrenad-backend.onrender.com";
+
+  async function sendCommandeToServer(service, donnees) {
+    try {
+      const res = await fetch(`${API_URL}/api/commandes/${service}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ donnees }),
+      });
+
+      if (!res.ok) {
+        console.error("Erreur backend :", await res.text());
+        alert("Commande enregistrée en local, mais erreur côté serveur.");
+        return;
+      }
+      console.log("Commande envoyée au serveur pour", service);
+    } catch (err) {
+      console.error("Impossible de joindre le backend :", err);
+    }
+  }
+
+  function collectFormData() {
+    const form = document.getElementById("form-bar");
+    const data = {};
+    if (!form) return data;
+
+    const elements = form.querySelectorAll("input, textarea, select");
+    elements.forEach((el) => {
+      if (!el.name) return;
+      if (el.type === "checkbox") {
+        data[el.name] = el.checked;
+      } else if (el.type === "radio") {
+        if (el.checked) {
+          data[el.name] = el.value;
+        }
+      } else {
+        data[el.name] = el.value;
+      }
+    });
+
+    return data;
+  }
+
+  function remplirFormAvecData(data) {
+    const form = document.getElementById("form-bar");
+    if (!form || !data) return;
+
+    const elements = form.querySelectorAll("input, textarea, select");
+    elements.forEach((el) => {
+      if (!el.name) return;
+      if (data[el.name] === undefined) return;
+
+      if (el.type === "checkbox") {
+        el.checked = !!data[el.name];
+      } else if (el.type === "radio") {
+        el.checked = (el.value === data[el.name]);
+      } else {
+        el.value = data[el.name];
+      }
+    });
+  }
+
+  function sauvegarderCommande() {
+    const donnees = collectFormData();
+
+    try {
+      localStorage.setItem("commande_" + SERVICE, JSON.stringify(donnees));
+    } catch (e) {
+      console.warn("Impossible d'enregistrer en localStorage :", e);
+    }
+
+    sendCommandeToServer(SERVICE, donnees);
+
+    alert("Commande Bar enregistrée.");
+  }
+
+  function effacerFormulaire() {
+    const form = document.getElementById("form-bar");
+    if (form) form.reset();
+    try {
+      localStorage.removeItem("commande_" + SERVICE);
+    } catch (e) {
+      console.warn("Impossible de supprimer du localStorage :", e);
+    }
+  }
+
+  function chargerDepuisLocal() {
+    try {
+      const raw = localStorage.getItem("commande_" + SERVICE);
+      if (!raw) return;
+      const data = JSON.parse(raw);
+      remplirFormAvecData(data);
+    } catch (e) {
+      console.warn("Impossible de lire le localStorage :", e);
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    chargerDepuisLocal();
+  });
+</script>
+
+</body>
+</html>

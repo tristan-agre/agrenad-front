@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Commandes AGRENAD</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f6f8;
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+
+    h1 {
+      text-align: center;
+      margin-top: 40px;
+    }
+
+    p.subtitle {
+      text-align: center;
+      margin-bottom: 40px;
+      color: #666;
+    }
+
+    /* --- CARTES SERVICES --- */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+      max-width: 800px;
+      margin: 0 auto 50px;
+      padding: 0 20px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+      text-decoration: none;
+      color: inherit;
+      transition: transform 0.2s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+    }
+
+    .card h3 {
+      margin-top: 0;
+    }
+
+    .card p {
+      color: #666;
+      font-size: 14px;
+    }
+
+    /* --- SECTION CUISINE --- */
+    .kitchen {
+      max-width: 800px;
+      margin: 0 auto 60px;
+      padding: 0 20px;
+      text-align: center;
+    }
+
+    .kitchen h2 {
+      margin-bottom: 20px;
+    }
+
+    /* --- BOUTONS BLEUS --- */
+    .actions-row {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .btn-primary {
+      background: #1976d2;
+      color: white;
+      text-decoration: none;
+      padding: 16px 22px;
+      border-radius: 12px;
+      font-weight: bold;
+      min-width: 220px;
+      text-align: center;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+      transition: background 0.2s ease;
+    }
+
+    .btn-primary:hover {
+      background: #125aa0;
+    }
+    /* --- BOUTON DISCRET (SETUP PIN) --- */
+    .btn-secondary {
+      background: #37496c;
+      color: white;
+      text-decoration: none;
+      padding: 14px 18px;
+      border-radius: 12px;
+      font-weight: bold;
+      min-width: 220px;
+      text-align: center;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+      transition: background 0.2s ease;
+      display: inline-block;
+    }
+
+    .btn-secondary:hover {
+      background: #4b5563;
+    }
+
+    .setup-row {
+      margin-top: 14px;
+      display: flex;
+      justify-content: center;
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+  <h1>Commandes AGRENAD</h1>
+  <p class="subtitle">Sélectionnez votre service pour saisir votre commande.</p>
+
+  <!-- SERVICES -->
+  <div class="cards">
+    <a href="petitdej.html" class="card">
+      <h3>Petit-déjeuner</h3>
+      <p>Produits du matin, lait, œufs, pain…</p>
+    </a>
+
+    <a href="bar.html" class="card">
+      <h3>Bar</h3>
+      <p>Confiseries, boissons, consommables…</p>
+    </a>
+
+    <a href="entretien.html" class="card">
+      <h3>Entretien</h3>
+      <p>Produits ménagers, gants, sacs poubelle…</p>
+    </a>
+  </div>
+
+  <!-- ACCÈS CUISINE -->
+  <div class="kitchen">
+    <h2>Accès cuisine</h2>
+
+    <div class="actions-row">
+      <a href="recap.html" class="btn-primary">
+        Validation des commandes
+      </a>
+
+      <a href="courses.html" class="btn-primary">
+        Courses
+      </a>
+    </div>
+    <div class="setup-row">
+      <a id="setupLink" href="setup.html"
+      class="btn-secondary" style="display:none;">
+    Configuration Pin
+      </a>
+    </div>
+  </div>
+  <script>
+fetch('https://agrenad-backend.onrender.com/api/hello', {credentials:"include"})
+.catch(()=>{});
+  async function toggleSetupLink(){
+    const link = document.getElementById("setupLink");
+    try{
+      const res = await fetch(`${API_URL}/api/pin/status`, { cache: "no-store" });
+      if(!res.ok) return; // on laisse caché
+      const st = await res.json();
+      // Visible uniquement si le setup n'est PAS verrouillé
+      link.style.display = st.setupLocked ? "none" : "inline-block";
+    } catch(e){
+      // backend inaccessible : on laisse caché
+      link.style.display = "none";
+    }
+  }
+
+  toggleSetupLink();
+  async function wakeServer() {
+  try {
+    await fetch(`${API_URL}/api/commandes`, { cache: "no-store" });
+  } catch (e) {
+    // pas grave
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  wakeServer();
+});
+</script>
+  </script>
+  <script>
+    const API_URL = "https://agrenad-backend.onrender.com";
+    (function WakeupBackend() {
+      fetch('{$API_URL}/api/hello', {
+        method: "GET",
+        cache: "no-store"
+      }).catch(() => {
+
+      });
+    })();
+  </script>
+</body>
+</html>

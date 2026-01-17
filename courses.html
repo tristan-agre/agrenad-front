@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Liste de courses</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 16px; background:#f6f7f9; }
+    .wrap { max-width: 980px; margin: 0 auto; }
+    h1 { text-align:center; margin: 10px 0 14px; font-size: 20px; }
+
+    .toolbar {
+      display:flex; flex-wrap:wrap; gap:10px; justify-content:center;
+      margin: 10px 0 14px;
+    }
+    button {
+      padding: 10px 14px; border:0; border-radius:12px;
+      cursor:pointer; font-size: 15px; color:#fff; background:#2563eb;
+    }
+    button:hover { filter: brightness(0.95); }
+    .btn-grey { background:#6b7280; }
+    .btn-red { background:#dc2626; }
+    .btn-green { background:#16a34a; }
+
+    .status { text-align:center; color:#6b7280; margin: 8px 0; }
+    .error { text-align:center; color:#b91c1c; font-weight:600; margin: 8px 0; }
+
+    .panel {
+      background:#fff; border-radius:14px; margin: 10px 0;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+      overflow: hidden;
+    }
+    .panel h2 {
+      margin: 0; padding: 14px;
+      background:#111827; color:#fff; font-size: 15px;
+      letter-spacing:.04em; text-transform:uppercase;
+    }
+    .list { padding: 12px 14px 14px; display:flex; flex-direction:column; gap:10px; }
+
+    .item {
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      padding: 10px; border-radius:12px; background:#f3f4f6;
+    }
+    .left { display:flex; align-items:center; gap:10px; min-width:0; }
+    .name { font-weight:800; color:#111827; }
+    .qty { color:#111827; font-weight:700; background:#fff; border:1px solid #d1d5db; padding:6px 10px; border-radius:999px; }
+    .controls { display:flex; gap:8px; align-items:center; }
+    .del {
+      background:#dc2626; color:#fff; border:0; border-radius:10px;
+      padding: 8px 10px; cursor:pointer; font-size: 13px;
+    }
+    .del:hover { filter: brightness(0.95); }
+    .muted { color:#6b7280; font-size:12px; text-align:center; padding: 10px; }
+    .done .name { text-decoration: line-through; color:#6b7280; }
+    .done .qty { opacity:.55; }
+    .small { font-size: 12px; color:#6b7280; text-align:center; margin-top: 8px; }
+    .inputRow {
+      display:flex; gap:10px; flex-wrap:wrap;
+      padding: 12px 14px 14px;
+      border-top: 1px solid #e5e7eb;
+    }
+    input[type="text"]{
+      padding:10px; border-radius:10px; border:1px solid #d1d5db;
+      font-size: 14px; background:#fff;
+      flex:1; min-width:220px;
+    }
+    .hint { font-size:12px; color:#6b7280; margin-top: 6px; text-align:center; }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <h1>Liste de courses</h1>
+
+    <div class="toolbar">
+      <button class="btn-grey" onclick="goHome()">Retour</button>
+      <button onclick="refresh()">Rafraîchir</button>
+      <button class="btn-green" onclick="loadFromValidate()">Recharger snapshot validé</button>
+      <button class="btn-red" onclick="resetLocal()">Reset liste (réafficher tout)</button>
+    </div>
+
+    <div id="status" class="status"></div>
+    <div id="error" class="error"></div>
+
+    <div id="meta" class="small"></div>
+
+    <div id="content"></div>
+
+    <div class="hint">
+      ✅ Tu coches quand c’est acheté. 🗑️ “Supprimer” enlève la ligne de ta vue (tu peux tout remettre avec “Reset liste”).
+    </div>
+  </div>
+
+<script>
+  // ========= CONFIG =========
+  const API_URL = "https://agrenad-backend.onrender.com";
+
+  // Stockage local (sur ce PC)
+  const LS_KEY = "agrenad_course_state_v1";
+  // structure:
+  // {
+  // deleted: { "service|prod": true },
+  // checked: { "service|prod": true },
+  // custom: { "service": { "prod": qty } } // produits ajoutés manuellement
+  // }
+
+  const SERVICES = [
+    { key: "petitdej", label: "Petit-déj" },
+    { key: "bar", label: "Bar" },
+    { key: "entretien", label: "Entretien" },
+  ];
+
+  // ========= UI helpers =========
+  function goHome(){ window.location.href = "index.html"; }
+  function setStatus(msg){ document.getElementById("status").textContent = msg || ""; }
+  function setError(msg){ document.getElementById("error").textContent = msg || ""; }
+  function setMeta(msg){ document.getElementById("meta").textContent = msg || ""; }
+
+  function labelize(prodKey){
+    return String(prodKey)
+      .replaceAll("_"," ")
+      .replace(/\b\w/g, (m)=>m.toUpperCase());
+  }
+
+  function isNonZeroValue(v){
+    if (v === null || v === undefined) return false;
+    const t = String(v).trim();
+    if (t === "" || t === "0") return false;
+    const n = Number(t);
+    if (!Number.isNaN(n)) return n !== 0;
+    return true;
+  }
+
+  // ========= Local state =========
+  function loadState(){
+    try {
+      const raw = localStorage.getItem(LS_KEY);
+      if (!raw) return { deleted:{}, checked:{}, custom:{} };
+      const obj = JSON.parse(raw);
+      return {
+        deleted: obj.deleted || {},
+        checked: obj.checked || {},
+        custom: obj.custom || {},
+      };
+    } catch {
+      return { deleted:{}, checked:{}, custom:{} };
+    }
+  }
+
+  function saveState(st){
+    localStorage.setItem(LS_KEY, JSON.stringify(st));
+  }
+
+  function keyOf(serviceKey, prod){ return `${serviceKey}|${prod}`; }
+
+  function resetLocal(){
+    if (!confirm("Remettre toutes les lignes (annuler suppressions + coches) ?")) return;
+    localStorage.removeItem(LS_KEY);
+    refresh();
+  }
+
+  // ========= Fetch snapshot =========
+  async function fetchValidatedSnapshot(){
+    // On essaie GET /api/validate (si ton backend le supporte)
+    // Sinon fallback GET /api/commandes et on affiche les quantités non nulles (moins “snapshot”).
+    // Si ton backend renvoie 404/405, on fallback.
+
+    // 1) tentative /api/validate en GET
+    try {
+      const res = await fetch(`${API_URL}/api/validate`, {
+        method: "GET",
+        credentials: "include",
+        cache: "no-store",
+      });
+      if (res.ok) return res.json();
+    } catch {}
+
+    // 2) fallback /api/commandes
+    const res2 = await fetch(`${API_URL}/api/commandes`, {
+      method: "GET",
+      credentials: "include",
+      cache: "no-store",
+    });
+    if (!res2.ok) {
+      const txt = await res2.text().catch(()=> "");
+      throw new Error(`HTTP ${res2.status} sur /api/commandes : ${txt}`);
+    }
+    return res2.json();
+  }
+
+  // Normalise en: { validatedAt, dataByService: { petitdej:{}, bar:{}, entretien:{} } }
+  function normalizeSnapshot(payload){
+    // payload peut être:
+    // - { validatedAt, commandes: { petitdej:{...}, ... } }
+    // - { validatedAt, snapshot: { petitdej:{...}, ... } }
+    // - { petitdej:{...}, bar:{...}, entretien:{...} }
+    // - { commandes: { petitdej:{ donnees:{...} } } } etc.
+
+    const out = { validatedAt: null, dataByService: { petitdej:{}, bar:{}, entretien:{} } };
+
+    if (!payload || typeof payload !== "object") return out;
+
+    out.validatedAt = payload.validatedAt || payload.validated_at || null;
+
+    // choisir le bon bloc
+    const base =
+      payload.commandes ||
+      payload.snapshot ||
+      payload.data ||
+      payload;
+
+    for (const s of SERVICES) {
+      const raw = base?.[s.key];
+      out.dataByService[s.key] = extractProduits(raw);
+    }
+
+    return out;
+  }
+
+  function extractProduits(serviceData){
+    // renvoie un objet flat { prod: qty }
+    if (!serviceData) return {};
+
+    // cas: { donnees: { donnees: {...} } }
+    if (serviceData.donnees && serviceData.donnees.donnees && typeof serviceData.donnees.donnees === "object") {
+      return serviceData.donnees.donnees;
+    }
+    // cas: { donnees: {...} }
+    if (serviceData.donnees && typeof serviceData.donnees === "object") {
+      return serviceData.donnees;
+    }
+    // cas: directement {...}
+    if (typeof serviceData === "object") {
+      // éviter d’embarquer des champs meta
+      const copy = { ...serviceData };
+      delete copy.updatedAt;
+      delete copy.validatedAt;
+      return copy;
+    }
+    return {};
+  }
+
+  // ========= Render =========
+  function render(normalized){
+    const st = loadState();
+    const root = document.getElementById("content");
+    root.innerHTML = "";
+
+    setMeta(normalized.validatedAt
+      ? `Snapshot validé : ${normalized.validatedAt}`
+      : `Pas de date de validation (affichage des quantités actuelles).`
+    );
+
+    for (const s of SERVICES) {
+      const panel = document.createElement("div");
+      panel.className = "panel";
+
+      const title = document.createElement("h2");
+      title.textContent = s.label;
+      panel.appendChild(title);
+
+      const list = document.createElement("div");
+      list.className = "list";
+
+      // fusion: snapshot + ajouts manuels
+      const merged = { ...(normalized.dataByService[s.key] || {}) };
+      const customForService = st.custom?.[s.key] || {};
+      for (const [k,v] of Object.entries(customForService)) merged[k] = v;
+
+      // entries non zéro + remarques non vides
+      const entries = Object.entries(merged)
+        .filter(([k,v]) => {
+          if (k === "remarques") return String(v||"").trim() !== "";
+          return isNonZeroValue(v);
+        })
+        .sort((a,b)=>a[0].localeCompare(b[0], "fr"));
+
+      let visibleCount = 0;
+
+      for (const [prod, qty] of entries) {
+        const k = keyOf(s.key, prod);
+        if (st.deleted[k]) continue;
+
+        visibleCount++;
+
+        const row = document.createElement("div");
+        row.className = "item";
+
+        const left = document.createElement("div");
+        left.className = "left";
+
+        const cb = document.createElement("input");
+        cb.type = "checkbox";
+        cb.checked = !!st.checked[k];
+        cb.addEventListener("change", () => {
+          const next = loadState();
+          if (cb.checked) next.checked[k] = true;
+          else delete next.checked[k];
+          saveState(next);
+          row.classList.toggle("done", cb.checked);
+        });
+
+        const name = document.createElement("div");
+        name.className = "name";
+        name.textContent = labelize(prod);
+
+        left.appendChild(cb);
+        left.appendChild(name);
+
+        const controls = document.createElement("div");
+        controls.className = "controls";
+
+        const qtyPill = document.createElement("div");
+        qtyPill.className = "qty";
+        qtyPill.textContent = (prod === "remarques") ? String(qty || "") : `x ${qty}`;
+
+        const del = document.createElement("button");
+        del.className = "del";
+        del.textContent = "Supprimer";
+        del.addEventListener("click", () => {
+          const next = loadState();
+          next.deleted[k] = true;
+          // si on supprime, on peut aussi décocher pour éviter de garder un état fantôme
+          delete next.checked[k];
+          saveState(next);
+          refresh(); // rerender
+        });
+
+        controls.appendChild(qtyPill);
+        controls.appendChild(del);
+
+        row.appendChild(left);
+        row.appendChild(controls);
+
+        if (cb.checked) row.classList.add("done");
+
+        list.appendChild(row);
+      }
+
+      if (visibleCount === 0) {
+        const empty = document.createElement("div");
+        empty.className = "muted";
+        empty.textContent = "Rien à acheter ici (tout est à 0 ou supprimé).";
+        list.appendChild(empty);
+      }
+
+      panel.appendChild(list);
+
+      // Ajout manuel ultra simple (optionnel, pratique)
+      const inputRow = document.createElement("div");
+      inputRow.className = "inputRow";
+      inputRow.innerHTML = `
+        <input id="in_name_${s.key}" type="text" placeholder="Ajouter un produit (ex: jambon)" />
+        <input id="in_qty_${s.key}" type="text" placeholder="Quantité (ex: 10)" style="max-width:220px" />
+        <button class="btn-green" type="button">Ajouter</button>
+      `;
+
+      const btn = inputRow.querySelector("button");
+      btn.addEventListener("click", () => {
+        const nameEl = inputRow.querySelector(`#in_name_${s.key}`);
+        const qtyEl = inputRow.querySelector(`#in_qty_${s.key}`);
+        const name = (nameEl.value || "").trim();
+        const qty = (qtyEl.value || "").trim();
+        if (!name) return alert("Écris un nom de produit.");
+        if (!qty) return alert("Écris une quantité.");
+
+        const next = loadState();
+        if (!next.custom[s.key]) next.custom[s.key] = {};
+        next.custom[s.key][name] = qty;
+
+        // si la ligne avait été “supprimée”, on la remet
+        delete next.deleted[keyOf(s.key, name)];
+
+        saveState(next);
+        nameEl.value = "";
+        qtyEl.value = "";
+        refresh();
+      });
+
+      panel.appendChild(inputRow);
+      root.appendChild(panel);
+    }
+  }
+
+  // ========= Actions =========
+  async function refresh(){
+    try {
+      setError("");
+      setStatus("Chargement…");
+
+      const payload = await fetchValidatedSnapshot();
+      const normalized = normalizeSnapshot(payload);
+
+      render(normalized);
+      setStatus("");
+    } catch (e) {
+      console.error(e);
+      setStatus("");
+      setError("❌ " + (e?.message || e));
+    }
+  }
+
+  async function loadFromValidate(){
+    // Ici c’est juste un alias “refresh”, mais le bouton est explicite pour l’équipe.
+    await refresh();
+  }
+
+  // Init
+  refresh();
+</script>
+</body>
+</html>

@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Commande Petit-Déjeuner</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      margin: 0;
+      padding: 1.5rem;
+      max-width: 800px;
+      margin-inline: auto;
+      background: #f5f5f5;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+    .card {
+      background: #ffffff;
+      padding: 1.5rem;
+      border-radius: 1rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      margin-bottom: 1rem;
+    }
+    .field-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.6rem;
+      gap: 0.5rem;
+    }
+    .field-row label {
+      flex: 1;
+      font-weight: 500;
+    }
+    .field-row input[type="number"] {
+      width: 90px;
+      padding: 0.3rem 0.4rem;
+      border-radius: 0.5rem;
+      border: 1px solid #ccc;
+      text-align: right;
+    }
+    .buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.7rem;
+      justify-content: center;
+      margin-top: 1rem;
+    }
+    button {
+      border: none;
+      padding: 0.6rem 1.2rem;
+      border-radius: 999px;
+      font-size: 0.95rem;
+      cursor: pointer;
+    }
+    .primary {
+      background: #2563eb;
+      color: white;
+      font-weight: 600;
+    }
+    .secondary {
+      background: #e5e7eb;
+      color: #111827;
+    }
+    .danger {
+      background: #dc2626;
+      color: white;
+      font-weight: 600;
+    }
+    .top-nav {
+      margin-bottom: 1rem;
+      display: flex;
+      justify-content: space-between;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .top-nav button {
+      padding-inline: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+
+<div class="top-nav">
+  <button class="secondary" type="button" onclick="window.location.href='index.html'">
+    ⬅️ Retour accueil
+  </button>
+  <button class="secondary" type="button" onclick="window.location.href='recap.html'">
+    📄 Voir le récapitulatif
+  </button>
+</div>
+
+<h1>Commande Petit-Déjeuner</h1>
+
+<div class="card">
+  <form id="form-petitdej">
+    <!-- Mets ici les produits que tu veux pour les commandes petit-déjeuner -->
+
+    <div class="field-row">
+      <label for="oeufs">Œufs</label>
+      <input type="number" id="oeufs" name="oeufs" min="0" step="1" />
+    </div>
+
+    <div class="field-row">
+      <label for="fromage_blanc">Fromage blanc</label>
+      <input type="number" id="fromage_blanc" name="fromage_blanc" min="0" step="1" />
+    </div>
+
+    <div class="field-row">
+      <label for="lait">Lait</label>
+      <input type="number" id="lait" name="lait" min="0" step="1" />
+    </div>
+
+    <div class="field-row">
+      <label for="brioches">Brioches</label>
+      <input type="number" id="brioches" name="brioches" min="0" step="1" />
+    </div>
+
+    <div class="field-row">
+      <label for="pains_au_lait">Pains au lait</label>
+      <input type="number" id="pains_au_lait" name="pains_au_lait" min="0" step="1" />
+    </div>
+
+    <div class="field-row">
+      <label for="beurre_demi_sel">Beurre demi-sel</label>
+      <input type="number" id="beurre_demi_sel" name="beurre_demi_sel" min="0" step="1" />
+    </div>
+
+    <div class="field-row">
+      <label for="beurre_doux">Beurre doux</label>
+      <input type="number" id="beurre_doux" name="beurre_doux" min="0" step="1" />
+    </div>
+
+    <div class="field-row">
+      <label for="jambon">Jambon</label>
+      <input type="number" id="jambon" name="jambon" min="0" step="1" />
+    </div>
+
+    <div class="field-row">
+      <label for="poulet">Poulet</label>
+      <input type="number" id="poulet" name="poulet" min="0" step="1" />
+    </div>
+
+    <div class="field-row">
+      <label for="graines">Graines</label>
+      <input type="number" id="graines" name="graines" min="0" step="1" />
+    </div>
+
+    <div class="field-row">
+      <label for="bananes">Bananes</label>
+      <input type="number" id="bananes" name="bananes" min="0" step="1" />
+    </div>
+
+    <div class="field-row">
+      <label for="the">Thé (sachets)</label>
+      <input type="number" id="the" name="the" min="0" step="1" />
+    </div>
+
+    <div class="field-row">
+      <label for="remarques">Remarques / précisions</label>
+    </div>
+    <div class="field-row" style="flex-direction: column; align-items: stretch;">
+      <textarea id="remarques" name="remarques" rows="3"
+        style="width:100%; border-radius:0.5rem; border:1px solid #ccc; padding:0.4rem 0.6rem;"></textarea>
+    </div>
+
+    <div class="buttons">
+      <button class="primary" type="button" onclick="sauvegarderCommande()">
+        💾 Enregistrer la commande
+      </button>
+      <button class="danger" type="button" onclick="effacerFormulaire()">
+        🧹 Effacer
+      </button>
+    </div>
+  </form>
+</div>
+
+<script>
+  // SERVICE pour cette page
+  const SERVICE = "petitdej";
+
+  // Adresse backend
+  const API_URL = "https://agrenad-backend.onrender.com"; // à adapter si besoin
+
+  // ---------- Gestion backend ----------
+
+  async function sendCommandeToServer(service, donnees) {
+    try {
+      const res = await fetch(`${API_URL}/api/commandes/${service}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(donnees),
+      });
+
+      if (!res.ok) {
+        console.error("Erreur backend :", await res.text());
+        alert("Commande enregistrée en local, mais erreur côté serveur.");
+        return;
+      }
+
+      console.log("Commande envoyée au serveur pour", service);
+    } catch (err) {
+      console.error("Impossible de joindre le backend :", err);
+      // On ne bloque pas l'utilisateur
+    }
+  }
+
+  // ---------- Gestion formulaire ----------
+
+  function collectFormData() {
+    const form = document.getElementById("form-petitdej");
+    const data = {};
+    if (!form) return data;
+
+    const elements = form.querySelectorAll("input, textarea, select");
+    elements.forEach((el) => {
+      if (!el.name) return;
+      if (el.type === "checkbox") {
+        data[el.name] = el.checked;
+      } else if (el.type === "radio") {
+        if (el.checked) {
+          data[el.name] = el.value;
+        }
+      } else {
+        data[el.name] = (el.value === "" ? "0" : el.value);
+      }
+    });
+
+    return data;
+  }
+
+  function remplirFormAvecData(data) {
+    const form = document.getElementById("form-petitdej");
+    if (!form || !data) return;
+
+    const elements = form.querySelectorAll("input, textarea, select");
+    elements.forEach((el) => {
+      if (!el.name) return;
+      if (data[el.name] === undefined) return;
+
+      if (el.type === "checkbox") {
+        el.checked = !!data[el.name];
+      } else if (el.type === "radio") {
+        el.checked = (el.value === data[el.name]);
+      } else {
+        el.value = data[el.name];
+      }
+    });
+  }
+
+  function sauvegarderCommande() {
+    const donnees = collectFormData();
+
+    // 1) Enregistrement local
+    try {
+      localStorage.setItem("commande_" + SERVICE, JSON.stringify(donnees));
+    } catch (e) {
+      console.warn("Impossible d'enregistrer en localStorage :", e);
+    }
+
+    // 2) Envoi au backend
+    sendCommandeToServer(SERVICE, donnees);
+
+    alert("Commande Petit-Déjeuner enregistrée.");
+  }
+
+  function effacerFormulaire() {
+    const form = document.getElementById("form-petitdej");
+    if (form) form.reset();
+    try {
+      localStorage.removeItem("commande_" + SERVICE);
+    } catch (e) {
+      console.warn("Impossible de supprimer du localStorage :", e);
+    }
+  }
+
+  function chargerDepuisLocal() {
+    try {
+      const raw = localStorage.getItem("commande_" + SERVICE);
+      if (!raw) return;
+      const data = JSON.parse(raw);
+      remplirFormAvecData(data);
+    } catch (e) {
+      console.warn("Impossible de lire le localStorage :", e);
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    chargerDepuisLocal();
+  });
+</script>
+
+</body>
+</html>
